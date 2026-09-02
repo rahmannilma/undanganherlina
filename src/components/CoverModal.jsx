@@ -83,11 +83,13 @@ export default function CoverModal({ isOpen, onClose, onStartIntro, guestName })
         : 'opacity-100'
         }`}
     >
-      {/* Fullscreen Background Image sampul.jpg */}
+      {/* Fullscreen Background Image sampul.webp */}
       <div className="absolute inset-0 overflow-hidden pointer-events-none z-0">
         <img
-          src="/sampul.jpg"
+          src="/sampul.webp"
           alt="Sampul Undangan"
+          decoding="async"
+          fetchPriority="high"
           className="w-full h-full object-cover object-center select-none"
         />
         {/* Dark contrast tint for readability */}

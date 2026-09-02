@@ -58,8 +58,9 @@ export function GroomSection({ onPhotoClick }) {
         <img
           className="w-full h-full object-cover rounded-xl grayscale group-hover:grayscale-0 transition-all duration-700 group-hover:scale-105"
           alt="Muhammad Arfan"
-          src="/arfan.jpeg"
+          src="/arfan.webp"
           loading="lazy"
+          decoding="async"
         />
       </div>
 
@@ -96,8 +97,9 @@ export function GroomSection({ onPhotoClick }) {
             className="relative max-w-sm sm:max-w-md w-full max-h-[85vh] flex items-center justify-center"
           >
             <img
-              src="/arfan.jpeg"
+              src="/arfan.webp"
               alt="Muhammad Arfan"
+              decoding="async"
               className="max-w-full max-h-[82vh] w-auto h-auto object-contain rounded-2xl border-2 border-secondary/60 shadow-2xl select-none"
             />
           </div>
@@ -165,8 +167,9 @@ export function BrideSection({ onPhotoClick }) {
         <img
           className="w-full h-full object-cover rounded-xl grayscale group-hover:grayscale-0 transition-all duration-700 group-hover:scale-105"
           alt="Herlina"
-          src="/herlina.jpg"
+          src="/herlina.webp"
           loading="lazy"
+          decoding="async"
         />
       </div>
 
@@ -222,8 +225,9 @@ export function BrideSection({ onPhotoClick }) {
             className="relative max-w-sm sm:max-w-md w-full max-h-[85vh] flex items-center justify-center"
           >
             <img
-              src="/herlina.jpg"
+              src="/herlina.webp"
               alt="Herlina"
+              decoding="async"
               className="max-w-full max-h-[82vh] w-auto h-auto object-contain rounded-2xl border-2 border-secondary/60 shadow-2xl select-none"
             />
           </div>

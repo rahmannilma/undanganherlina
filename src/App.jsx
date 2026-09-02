@@ -18,6 +18,7 @@ export default function App() {
   const [isHeroCardVisible, setIsHeroCardVisible] = useState(false);
   const [isInvitationRevealed, setIsInvitationRevealed] = useState(false);
   const [isAudioAutoPlay, setIsAudioAutoPlay] = useState(false);
+  const [isBg2Active, setIsBg2Active] = useState(false);
 
   // Dual Video Layer untuk Seamless Smooth Crossfade Loop (5s - 9s)
   const [activeBg1Layer, setActiveBg1Layer] = useState('A');
@@ -26,6 +27,7 @@ export default function App() {
   const isCrossfadingRef = useRef(false);
 
   const bg2Ref = useRef(null);
+  const heroSectionRef = useRef(null);
 
   useEffect(() => {
     // Read guest name from query parameters e.g., ?to=Nama+Tamu or ?name=Nama+Tamu
@@ -46,6 +48,31 @@ export default function App() {
       document.body.style.overflow = 'unset';
     };
   }, [isCoverOpen]);
+
+  // Aktifkan bg2 hanya saat Hero section scroll keluar layar
+  useEffect(() => {
+    if (!heroSectionRef.current) return;
+    const observer = new IntersectionObserver(
+      ([entry]) => {
+        if (!entry.isIntersecting) {
+          // Hero sudah tidak terlihat → aktifkan bg2
+          setIsBg2Active(true);
+          if (bg2Ref.current && bg2Ref.current.paused) {
+            bg2Ref.current.play().catch(() => {});
+          }
+        } else {
+          // Hero kembali terlihat → pause bg2 untuk hemat GPU
+          setIsBg2Active(false);
+          if (bg2Ref.current && !bg2Ref.current.paused) {
+            bg2Ref.current.pause();
+          }
+        }
+      },
+      { threshold: 0.05 }
+    );
+    observer.observe(heroSectionRef.current);
+    return () => observer.disconnect();
+  }, [isInvitationRevealed]);
 
   // Transisi Crossfade yang sangat halus di detik 8.2s menuju detik 5.0s
   const handleBg1TimeUpdate = (layer) => {
@@ -81,9 +108,8 @@ export default function App() {
     }
     setActiveBg1Layer('A');
 
-    if (bg2Ref.current) {
-      bg2Ref.current.play().catch(() => {});
-    }
+    // bg2 TIDAK langsung diputar – IntersectionObserver yang mengontrolnya
+    // supaya tidak ada 3 video berjalan bersamaan
 
     // Tepat di detik ke-4: tampilkan Card Hero (video bg1 tetap lanjut bermain halus)
     setTimeout(() => {
@@ -99,15 +125,16 @@ export default function App() {
   return (
     <div className="text-inverse-surface relative min-h-screen selection:bg-secondary selection:text-primary-container bg-black">
       {/* Fixed Fullscreen Background Video bg2 (Latar belakang tetap untuk seluruh bagian konten di bawah Hero) */}
-      <div className="fixed inset-0 z-0 overflow-hidden pointer-events-none bg-black">
+      {/* Diaktifkan oleh IntersectionObserver saat Hero scroll keluar layar */}
+      <div className={`fixed inset-0 z-0 overflow-hidden pointer-events-none bg-black transition-opacity duration-700 ${isBg2Active ? 'opacity-100' : 'opacity-0'}`}>
         <video
           ref={bg2Ref}
           src="/bg2.mp4"
-          autoPlay
           loop
           muted
           playsInline
-          preload="auto"
+          preload="none"
+          style={{ willChange: 'transform' }}
           className="w-full h-full object-cover object-top select-none"
         />
         {/* Soft Contrast Tint */}
@@ -126,6 +153,7 @@ export default function App() {
 
       {/* SECTION 1: FULLSCREEN HERO / INTRO SECTION (Dual layer crossfade untuk transisi looping super mulus) */}
       <section 
+        ref={heroSectionRef}
         className="relative z-10 min-h-screen w-full flex flex-col items-center justify-center px-4 sm:px-6 py-12 overflow-hidden snap-card bg-black shadow-2xl"
         id="invite"
       >
@@ -140,6 +168,7 @@ export default function App() {
             playsInline
             preload="auto"
             onTimeUpdate={() => handleBg1TimeUpdate('A')}
+            style={{ willChange: 'opacity, transform' }}
             className={`absolute inset-0 w-full h-full object-cover object-center select-none transition-opacity duration-1000 ease-in-out ${
               activeBg1Layer === 'A' ? 'opacity-100' : 'opacity-0'
             }`}
@@ -152,6 +181,7 @@ export default function App() {
             playsInline
             preload="auto"
             onTimeUpdate={() => handleBg1TimeUpdate('B')}
+            style={{ willChange: 'opacity, transform' }}
             className={`absolute inset-0 w-full h-full object-cover object-center select-none transition-opacity duration-1000 ease-in-out ${
               activeBg1Layer === 'B' ? 'opacity-100' : 'opacity-0'
             }`}

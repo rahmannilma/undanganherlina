@@ -18,7 +18,7 @@ export default function GallerySection() {
   // 13 Photos from 1.jpg to 13.jpg
   const photos = Array.from({ length: 13 }, (_, i) => ({
     id: i + 1,
-    src: `/${i + 1}.jpg`,
+    src: `/${i + 1}.webp`,
     alt: `Momen Bahagia Arfan & Herlina ${i + 1}`
   }));
 
@@ -196,8 +196,10 @@ export default function GallerySection() {
                   src={photo.src}
                   alt={photo.alt}
                   loading="lazy"
+                  decoding="async"
                   className="w-full h-full object-cover object-center select-none group-hover:scale-105 transition-transform duration-500 pointer-events-none"
                   draggable="false"
+                  style={{ willChange: 'transform' }}
                 />
 
                 {/* Subtle glass shine */}
