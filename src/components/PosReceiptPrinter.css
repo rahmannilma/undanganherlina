@@ -1,0 +1,254 @@
+/* ==========================================================================
+   POS RECEIPT PRINTER STYLING (Screen & Thermal Print)
+   ========================================================================== */
+
+/* Container Utama */
+.pos-printer-container {
+  font-family: 'Courier New', Courier, monospace, sans-serif;
+  padding: 1.5rem;
+  max-width: 800px;
+  margin: 0 auto;
+}
+
+/* Control Panel */
+.pos-control-panel {
+  background-color: #ffffff;
+  border-radius: 14px;
+  padding: 1.5rem;
+  box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.08), 0 8px 10px -6px rgba(0, 0, 0, 0.04);
+  border: 1px solid #e2e8f0;
+  margin-bottom: 2rem;
+  font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+}
+
+/* Area Tampilan Struk di Layar */
+.pos-print-area {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 1.5rem;
+  padding: 1.5rem 0;
+}
+
+/* Lembar Struk (Slip) */
+.receipt-slip {
+  background: #fff;
+  color: #000;
+  padding: 16px 12px;
+  box-shadow: 0 6px 18px rgba(0, 0, 0, 0.12);
+  border-radius: 6px;
+  box-sizing: border-box;
+  font-size: 12px;
+  line-height: 1.35;
+  transition: all 0.2s ease;
+}
+
+/* Watermark Banner Cetak Ulang (Reprint) */
+.reprint-watermark-banner {
+  background: #fef3c7;
+  color: #92400e;
+  border: 1px dashed #d97706;
+  padding: 4px 6px;
+  font-size: 10px;
+  font-weight: bold;
+  text-align: center;
+  margin-bottom: 8px;
+  border-radius: 3px;
+  text-transform: uppercase;
+}
+
+/* Ukuran Kertas Thermal */
+.receipt-slip.paper-58mm {
+  width: 58mm;
+  min-width: 58mm;
+}
+
+.receipt-slip.paper-80mm {
+  width: 80mm;
+  min-width: 80mm;
+  font-size: 13px;
+}
+
+/* Struk Ke-2 (Lembar Toko) */
+.receipt-slip.second-copy {
+  background: #fafafa;
+  border: 1px dashed #cbd5e1;
+}
+
+/* Typography & Elemen Struk */
+.store-title {
+  font-size: 14px;
+  font-weight: bold;
+  margin: 0 0 4px 0;
+  text-transform: uppercase;
+}
+
+.store-info {
+  font-size: 10px;
+  margin: 1px 0;
+  color: #475569;
+}
+
+.copy-badge {
+  display: inline-block;
+  margin-top: 6px;
+  padding: 2px 8px;
+  font-size: 11px;
+  font-weight: bold;
+  background: #000;
+  color: #fff;
+  border-radius: 2px;
+}
+
+/* Dividers */
+.receipt-divider-dashed {
+  border-top: 1px dashed #000;
+  margin: 8px 0;
+}
+
+.receipt-divider-dotted {
+  border-top: 1px dotted #64748b;
+  margin: 6px 0;
+}
+
+/* Metadata & Item rows */
+.meta-row, .summary-row {
+  display: flex;
+  justify-content: space-between;
+  margin: 2px 0;
+}
+
+.item-row {
+  margin-bottom: 6px;
+}
+
+.item-name {
+  font-weight: bold;
+  word-break: break-word;
+}
+
+.item-details {
+  display: flex;
+  justify-content: space-between;
+  font-size: 11px;
+  color: #1e293b;
+}
+
+.total-row {
+  font-size: 13px;
+  font-weight: bold;
+  margin-top: 4px;
+}
+
+.text-discount {
+  color: #b91c1c;
+}
+
+.thankyou-msg {
+  font-weight: bold;
+  margin: 4px 0 2px 0;
+}
+
+.notes {
+  font-size: 9px;
+  color: #64748b;
+  margin: 0;
+}
+
+.reprint-disclaimer {
+  font-size: 8px;
+  color: #b45309;
+  font-weight: bold;
+  margin-top: 4px;
+  text-align: center;
+}
+
+/* Garis Potong (Layar) */
+.receipt-cut-line {
+  font-size: 10px;
+  color: #64748b;
+  text-align: center;
+  margin: 0.5rem 0;
+}
+
+/* ==========================================================================
+   ATURAN KHUSUS CETAK KE PRINTER THERMAL (@media print)
+   ========================================================================== */
+@media print {
+  /* Sembunyikan semua elemen selain struk */
+  body * {
+    visibility: hidden !important;
+  }
+
+  .no-print,
+  .no-print * {
+    display: none !important;
+  }
+
+  /* Tampilkan hanya area struk */
+  #receipt-print-area,
+  #receipt-print-area * {
+    visibility: visible !important;
+  }
+
+  /* Reset margin halaman printer */
+  @page {
+    margin: 0;
+    size: auto;
+  }
+
+  html, body {
+    margin: 0 !important;
+    padding: 0 !important;
+    background: #fff !important;
+  }
+
+  .pos-print-area {
+    position: absolute;
+    left: 0;
+    top: 0;
+    width: 100% !important;
+    padding: 0 !important;
+    margin: 0 !important;
+    gap: 0 !important;
+    display: block !important;
+  }
+
+  .receipt-slip {
+    box-shadow: none !important;
+    border: none !important;
+    border-radius: 0 !important;
+    padding: 8px 6px !important;
+    background: #fff !important;
+    margin: 0 auto !important;
+    width: 100% !important;
+    max-width: 58mm; /* 58mm atau 80mm */
+  }
+
+  .receipt-slip.paper-80mm {
+    max-width: 80mm;
+  }
+
+  .copy-badge {
+    background: transparent !important;
+    color: #000 !important;
+    border: 1px solid #000 !important;
+  }
+
+  .reprint-watermark-banner {
+    background: transparent !important;
+    color: #000 !important;
+    border: 1px solid #000 !important;
+  }
+
+  /* Pemutus Halaman Otomatis (Page Break) untuk Printer Thermal */
+  .receipt-page-break {
+    display: block !important;
+    page-break-after: always !important;
+    break-after: page !important;
+    height: 0 !important;
+    margin: 0 !important;
+    padding: 0 !important;
+    border: none !important;
+  }
+}
