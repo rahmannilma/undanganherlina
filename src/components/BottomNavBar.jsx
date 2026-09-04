@@ -1,35 +1,63 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 
 export default function BottomNavBar() {
   const [activeSection, setActiveSection] = useState('invite');
   const [isVisible, setIsVisible] = useState(false);
+  const isClickingRef = useRef(false);
+  const clickTimeoutRef = useRef(null);
 
   useEffect(() => {
+    const sections = [
+      { id: 'invite', navId: 'invite' },
+      { id: 'couple', navId: 'couple' },
+      { id: 'bride', navId: 'couple' },
+      { id: 'event', navId: 'event' },
+      { id: 'gallery', navId: 'gallery' },
+      { id: 'rsvp', navId: 'rsvp' },
+      { id: 'gift', navId: 'gift' }
+    ];
+
     const handleScroll = () => {
-      // Navbar hanya muncul setelah pengguna scroll ke bawah (melewati bagian atas Hero)
       const scrollY = window.scrollY;
-      setIsVisible(scrollY > 280);
+      // Navbar hanya muncul setelah pengguna scroll ke bawah
+      setIsVisible(scrollY > 200);
 
-      const sections = ['invite', 'couple', 'bride', 'event', 'gallery', 'rsvp', 'gift'];
-      const scrollPosition = scrollY + window.innerHeight / 3;
+      // Jika baru saja diklik oleh user, hindari fluktuasi scroll listener
+      if (isClickingRef.current) return;
 
-      for (let i = sections.length - 1; i >= 0; i--) {
-        const el = document.getElementById(sections[i]);
-        if (el) {
-          const top = el.offsetTop;
-          if (scrollPosition >= top) {
-            setActiveSection(sections[i] === 'bride' ? 'couple' : sections[i]);
-            break;
-          }
+      // Jika sudah berada di bagian paling bawah halaman, aktifkan item terakhir
+      const isAtBottom =
+        window.innerHeight + scrollY >= document.documentElement.scrollHeight - 120;
+      if (isAtBottom) {
+        setActiveSection('gift');
+        return;
+      }
+
+      // Gunakan garis trigger di 42% tinggi layar viewport
+      const triggerY = window.innerHeight * 0.42;
+      let currentNav = 'invite';
+
+      for (const section of sections) {
+        const el = document.getElementById(section.id);
+        if (!el) continue;
+        const rect = el.getBoundingClientRect();
+        // Elemen aktif jika bagian atasnya telah mencapai atau melewati garis pandang (triggerY)
+        // dan bagian bawahnya masih berada di area pandang layar
+        if (rect.top <= triggerY && rect.bottom > 80) {
+          currentNav = section.navId;
         }
       }
+
+      setActiveSection(currentNav);
     };
 
     window.addEventListener('scroll', handleScroll, { passive: true });
-    // Panggil sekali untuk inisialisasi awal
     handleScroll();
 
-    return () => window.removeEventListener('scroll', handleScroll);
+    return () => {
+      window.removeEventListener('scroll', handleScroll);
+      if (clickTimeoutRef.current) clearTimeout(clickTimeoutRef.current);
+    };
   }, []);
 
   const navItems = [
@@ -43,10 +71,20 @@ export default function BottomNavBar() {
 
   const handleNavClick = (e, id) => {
     e.preventDefault();
+    setActiveSection(id);
+    isClickingRef.current = true;
+    if (clickTimeoutRef.current) clearTimeout(clickTimeoutRef.current);
+
     const targetEl = document.getElementById(id);
-    if (targetEl) {
-      targetEl.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    if (id === 'invite') {
+      window.scrollTo({ top: 0, behavior: 'smooth' });
+    } else if (targetEl) {
+      targetEl.scrollIntoView({ behavior: 'smooth', block: 'center' });
     }
+
+    clickTimeoutRef.current = setTimeout(() => {
+      isClickingRef.current = false;
+    }, 800);
   };
 
   return (

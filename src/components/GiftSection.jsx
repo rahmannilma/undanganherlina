@@ -5,7 +5,7 @@ export default function GiftSection() {
 
   const bankAccounts = [
     {
-      bank: 'BANK BRI',
+      bank: 'BANK BNI',
       number: '1939722581',
       displayNumber: '1939 7225 81',
       holder: 'Herlina',
@@ -94,11 +94,10 @@ export default function GiftSection() {
               {/* Copy Button */}
               <button
                 onClick={() => handleCopy(acc.number, acc.bank)}
-                className={`w-full py-2.5 px-4 rounded-xl border flex items-center justify-center gap-2 text-xs uppercase font-label-caps tracking-widest transition-all duration-300 shadow-md active:scale-95 ${
-                  copiedBank === acc.bank
+                className={`w-full py-2.5 px-4 rounded-xl border flex items-center justify-center gap-2 text-xs uppercase font-label-caps tracking-widest transition-all duration-300 shadow-md active:scale-95 ${copiedBank === acc.bank
                     ? 'bg-emerald-600 border-emerald-500 text-white shadow-emerald-900/40 font-semibold'
                     : 'bg-secondary text-primary-container border-secondary font-semibold hover:bg-transparent hover:text-secondary hover:shadow-lg'
-                }`}
+                  }`}
               >
                 <span className="material-symbols-outlined text-base">
                   {copiedBank === acc.bank ? 'check_circle' : 'content_copy'}

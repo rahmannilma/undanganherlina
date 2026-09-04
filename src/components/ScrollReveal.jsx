@@ -14,6 +14,9 @@ export default function ScrollReveal({
       ([entry]) => {
         if (entry.isIntersecting) {
           setIsVisible(true);
+          if (domRef.current) {
+            observer.unobserve(domRef.current);
+          }
         }
       },
       {
@@ -40,10 +43,10 @@ export default function ScrollReveal({
       style={{
         transitionDelay: `${delay}ms`,
       }}
-      className={`scroll-card-item w-full transform-gpu transition-all duration-1000 ease-smooth-out will-change-[transform,opacity,filter] ${
+      className={`scroll-card-item w-full transition-all duration-1000 ease-smooth-out ${
         isVisible
           ? 'opacity-100 scale-100 translate-y-0 filter-none'
-          : 'opacity-0 scale-[0.88] translate-y-12 filter blur-[1px]'
+          : 'opacity-0 scale-[0.88] translate-y-12 filter blur-[1px] will-change-[transform,opacity]'
       } ${className}`}
     >
       {children}

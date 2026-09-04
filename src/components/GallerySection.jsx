@@ -3,19 +3,20 @@ import React, { useState, useEffect, useRef } from 'react';
 export default function GallerySection() {
   const [selectedPhotoIndex, setSelectedPhotoIndex] = useState(null);
   const [isAutoPlay, setIsAutoPlay] = useState(true);
-  const [rotation, setRotation] = useState(0);
-  const [isDragging, setIsDragging] = useState(false);
 
+  const sectionRef = useRef(null);
+  const cylinderRef = useRef(null);
   const rotationRef = useRef(0);
   const isAutoPlayRef = useRef(true);
   const isDraggingRef = useRef(false);
+  const isInViewRef = useRef(false);
   const startXRef = useRef(0);
   const lastXRef = useRef(0);
   const dragDistanceRef = useRef(0);
   const reqAnimRef = useRef(null);
   const resumeTimerRef = useRef(null);
 
-  // 13 Photos from 1.jpg to 13.jpg
+  // 13 Photos from 1.webp to 13.webp
   const photos = Array.from({ length: 13 }, (_, i) => ({
     id: i + 1,
     src: `/${i + 1}.webp`,
@@ -24,8 +25,6 @@ export default function GallerySection() {
 
   const totalPhotos = photos.length;
   const angleStep = 360 / totalPhotos; // ~27.69 deg
-
-  // Radius for 3D circle (calculated so cards sit nicely in a cylinder)
   const radius = 230; // 230px radius
 
   // Keep refs in sync with state
@@ -33,7 +32,30 @@ export default function GallerySection() {
     isAutoPlayRef.current = isAutoPlay;
   }, [isAutoPlay]);
 
-  // 60FPS continuous smooth auto-rotation loop
+  // Observer to pause animation loop when gallery is outside viewport (0% CPU when not seen)
+  useEffect(() => {
+    const observer = new IntersectionObserver(
+      ([entry]) => {
+        isInViewRef.current = entry.isIntersecting;
+      },
+      { threshold: 0.05 }
+    );
+
+    if (sectionRef.current) {
+      observer.observe(sectionRef.current);
+    }
+
+    return () => observer.disconnect();
+  }, []);
+
+  // Update cylinder rotation directly on DOM to prevent 60fps React re-renders
+  const applyRotation = (angle) => {
+    if (cylinderRef.current) {
+      cylinderRef.current.style.transform = `rotateY(${angle}deg)`;
+    }
+  };
+
+  // Ultra-lightweight smooth auto-rotation loop
   useEffect(() => {
     let lastTimestamp = performance.now();
 
@@ -41,11 +63,11 @@ export default function GallerySection() {
       const delta = timestamp - lastTimestamp;
       lastTimestamp = timestamp;
 
-      if (isAutoPlayRef.current && !isDraggingRef.current) {
-        // Rotasi otomatis halus (kecepatan ~0.18 derajat per frame)
-        const speed = 0.015 * Math.min(delta, 32);
+      // Only calculate and apply transform when in viewport and autoplaying
+      if (isInViewRef.current && isAutoPlayRef.current && !isDraggingRef.current) {
+        const speed = 0.014 * Math.min(delta, 32);
         rotationRef.current = (rotationRef.current - speed) % 360;
-        setRotation(rotationRef.current);
+        applyRotation(rotationRef.current);
       }
 
       reqAnimRef.current = requestAnimationFrame(animate);
@@ -58,7 +80,6 @@ export default function GallerySection() {
   // Drag / Swipe interactions (Mouse & Touch)
   const handlePointerDown = (e) => {
     isDraggingRef.current = true;
-    setIsDragging(true);
     const clientX = e.touches ? e.touches[0].clientX : e.clientX;
     startXRef.current = clientX;
     lastXRef.current = clientX;
@@ -76,12 +97,11 @@ export default function GallerySection() {
 
     // Sensitivitas putaran saat digeser
     rotationRef.current = (rotationRef.current + deltaX * 0.45) % 360;
-    setRotation(rotationRef.current);
+    applyRotation(rotationRef.current);
   };
 
   const handlePointerUp = () => {
     isDraggingRef.current = false;
-    setIsDragging(false);
 
     // Lanjutkan putaran otomatis setelah 2.5 detik idle
     resumeTimerRef.current = setTimeout(() => {
@@ -118,10 +138,9 @@ export default function GallerySection() {
   };
 
   const rotateStep = (direction) => {
-    // Putar manual 1 slot foto (27.69 derajat)
     const target = direction === 'next' ? rotationRef.current - angleStep : rotationRef.current + angleStep;
     rotationRef.current = target;
-    setRotation(target);
+    applyRotation(target);
   };
 
   // Keyboard navigation
@@ -139,6 +158,7 @@ export default function GallerySection() {
 
   return (
     <section
+      ref={sectionRef}
       className="w-full text-center p-5 sm:p-7 bg-primary-container/45 backdrop-blur-lg rounded-3xl border border-secondary/50 shadow-2xl relative overflow-hidden select-none"
       id="gallery"
     >
@@ -170,12 +190,13 @@ export default function GallerySection() {
         onTouchMove={handlePointerMove}
         onTouchEnd={handlePointerUp}
       >
-        {/* Rotating 3D Cylinder Container */}
+        {/* Rotating 3D Cylinder Container (Manipulated directly via DOM for 0% React render overhead) */}
         <div
+          ref={cylinderRef}
           className="relative w-[125px] sm:w-[145px] h-[175px] sm:h-[205px]"
           style={{
             transformStyle: 'preserve-3d',
-            transform: `rotateY(${rotation}deg)`
+            transform: 'rotateY(0deg)'
           }}
         >
           {photos.map((photo, index) => {
@@ -185,11 +206,10 @@ export default function GallerySection() {
               <div
                 key={photo.id}
                 onClick={() => handlePhotoClick(index)}
-                className="absolute inset-0 rounded-2xl overflow-hidden border-2 border-secondary/60 bg-black/40 shadow-[0_8px_25px_rgba(0,0,0,0.6)] cursor-pointer transition-transform duration-200 hover:border-secondary hover:shadow-[0_0_20px_rgba(212,175,55,0.7)] group"
+                className="absolute inset-0 rounded-2xl overflow-hidden border-2 border-secondary/60 bg-black/40 shadow-[0_8px_20px_rgba(0,0,0,0.55)] cursor-pointer transition-transform duration-200 hover:border-secondary group"
                 style={{
                   transform: `rotateY(${itemAngle}deg) translateZ(${radius}px)`,
-                  backfaceVisibility: 'visible',
-                  WebkitBoxReflect: 'below 4px linear-gradient(transparent, transparent 75%, rgba(0,0,0,0.3))'
+                  backfaceVisibility: 'visible'
                 }}
               >
                 <img
@@ -199,7 +219,6 @@ export default function GallerySection() {
                   decoding="async"
                   className="w-full h-full object-cover object-center select-none group-hover:scale-105 transition-transform duration-500 pointer-events-none"
                   draggable="false"
-                  style={{ willChange: 'transform' }}
                 />
 
                 {/* Subtle glass shine */}
@@ -265,7 +284,7 @@ export default function GallerySection() {
       {selectedPhotoIndex !== null && (
         <div
           onClick={closeLightbox}
-          className="fixed inset-0 z-50 flex items-center justify-center bg-black/95 backdrop-blur-xl p-4 transition-opacity duration-300 animate-fade-up"
+          className="fixed inset-0 z-50 flex items-center justify-center bg-black/95 backdrop-blur-md p-4 transition-opacity duration-300 animate-fade-up"
         >
           {/* Close Button */}
           <button

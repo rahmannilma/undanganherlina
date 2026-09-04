@@ -20,6 +20,10 @@
   pointer-events: none;
 }
 
+.font-script {
+  font-family: 'Great Vibes', cursive, 'EB Garamond', serif;
+}
+
 html {
   scroll-behavior: smooth;
   scroll-snap-type: y proximity;

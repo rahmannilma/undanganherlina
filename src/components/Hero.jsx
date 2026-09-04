@@ -5,7 +5,6 @@ export default function Hero({ guestName, isRevealed = true }) {
   return (
     <section
       className="w-full text-center p-6 sm:p-8 bg-primary-container/45 backdrop-blur-lg rounded-3xl border border-secondary/50 shadow-2xl relative overflow-hidden"
-      id="invite"
     >
       {/* Corner Ornaments */}
       <div className="absolute top-4 left-4 w-8 h-8 border-t-2 border-l-2 border-secondary opacity-60 rounded-tl-lg"></div>

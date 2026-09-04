@@ -93,7 +93,7 @@ export default function CoverModal({ isOpen, onClose, onStartIntro, guestName })
           className="w-full h-full object-cover object-center select-none"
         />
         {/* Dark contrast tint for readability */}
-        <div className="absolute inset-0 bg-black/45 backdrop-blur-[0.5px]"></div>
+        <div className="absolute inset-0 bg-black/45"></div>
       </div>
 
       {/* Gold Paper Texture */}
@@ -139,9 +139,9 @@ export default function CoverModal({ isOpen, onClose, onStartIntro, guestName })
           The Wedding Celebration
         </p>
 
-        <h1 className="font-display-names text-[36px] sm:text-[44px] text-secondary leading-tight font-serif [text-shadow:_0_3px_14px_rgba(0,0,0,0.95),_0_6px_28px_rgba(0,0,0,0.85)]">
+        <h1 className="font-script text-[52px] sm:text-[64px] text-secondary leading-tight [text-shadow:_0_3px_14px_rgba(0,0,0,0.95),_0_6px_28px_rgba(0,0,0,0.85)] tracking-wide font-normal">
           <span className="block">Arfan</span>
-          <span className="block text-2xl sm:text-3xl font-serif text-tertiary my-1 [text-shadow:_0_2px_10px_rgba(0,0,0,0.95)]">&amp;</span>
+          <span className="block text-2xl sm:text-3xl text-tertiary my-0.5 font-serif [text-shadow:_0_2px_10px_rgba(0,0,0,0.95)]">&amp;</span>
           <span className="block">Herlina</span>
         </h1>
 

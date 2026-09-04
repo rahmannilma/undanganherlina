@@ -70,6 +70,7 @@ export default {
         "container-max-width": "1120px"
       },
       fontFamily: {
+        "script": ["\"Great Vibes\"", "cursive"],
         "body-lg": ["\"Source Serif 4\"", "serif"],
         "headline-lg": ["\"Playfair Display\"", "serif"],
         "label-caps": ["\"Source Serif 4\"", "serif"],

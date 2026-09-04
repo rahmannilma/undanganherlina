@@ -17,15 +17,10 @@ export default function App() {
   const [isCoverOpen, setIsCoverOpen] = useState(true);
   const [isHeroCardVisible, setIsHeroCardVisible] = useState(false);
   const [isInvitationRevealed, setIsInvitationRevealed] = useState(false);
-  const [isAudioAutoPlay, setIsAudioAutoPlay] = useState(false);
   const [isBg2Active, setIsBg2Active] = useState(false);
 
-  // Dual Video Layer untuk Seamless Smooth Crossfade Loop (5s - 9s)
-  const [activeBg1Layer, setActiveBg1Layer] = useState('A');
-  const bg1ARef = useRef(null);
-  const bg1BRef = useRef(null);
-  const isCrossfadingRef = useRef(false);
-
+  // Single video untuk bg1 (lebih ringan dari dual layer)
+  const bg1Ref = useRef(null);
   const bg2Ref = useRef(null);
   const heroSectionRef = useRef(null);
 
@@ -49,19 +44,25 @@ export default function App() {
     };
   }, [isCoverOpen]);
 
-  // Aktifkan bg2 hanya saat Hero section scroll keluar layar
+  // Aktifkan bg2 hanya saat Hero section scroll keluar layar, dan pause bg1 untuk hemat GPU
   useEffect(() => {
     if (!heroSectionRef.current) return;
     const observer = new IntersectionObserver(
       ([entry]) => {
         if (!entry.isIntersecting) {
-          // Hero sudah tidak terlihat → aktifkan bg2
+          // Hero sudah tidak terlihat → pause bg1 & aktifkan bg2
+          if (bg1Ref.current && !bg1Ref.current.paused) {
+            bg1Ref.current.pause();
+          }
           setIsBg2Active(true);
           if (bg2Ref.current && bg2Ref.current.paused) {
             bg2Ref.current.play().catch(() => {});
           }
         } else {
-          // Hero kembali terlihat → pause bg2 untuk hemat GPU
+          // Hero kembali terlihat → resume bg1 & pause bg2 untuk hemat GPU
+          if (bg1Ref.current && bg1Ref.current.paused && isInvitationRevealed) {
+            bg1Ref.current.play().catch(() => {});
+          }
           setIsBg2Active(false);
           if (bg2Ref.current && !bg2Ref.current.paused) {
             bg2Ref.current.pause();
@@ -74,44 +75,14 @@ export default function App() {
     return () => observer.disconnect();
   }, [isInvitationRevealed]);
 
-  // Transisi Crossfade yang sangat halus di detik 8.2s menuju detik 5.0s
-  const handleBg1TimeUpdate = (layer) => {
-    if (layer !== activeBg1Layer) return;
-
-    const currentVideo = layer === 'A' ? bg1ARef.current : bg1BRef.current;
-    const nextVideo = layer === 'A' ? bg1BRef.current : bg1ARef.current;
-
-    if (!currentVideo || isCrossfadingRef.current) return;
-
-    if (currentVideo.currentTime >= 8.2) {
-      isCrossfadingRef.current = true;
-      if (nextVideo) {
-        nextVideo.currentTime = 5.0;
-        nextVideo.play().catch(() => {});
-      }
-      setActiveBg1Layer(layer === 'A' ? 'B' : 'A');
-
-      setTimeout(() => {
-        isCrossfadingRef.current = false;
-      }, 1200);
-    }
-  };
-
   const handleStartIntro = () => {
-    // Musik langsung berputar seketika tombol Buka Undangan ditekan
-    setIsAudioAutoPlay(true);
-
-    // Memastikan video Layer A mulai berputar dari awal
-    if (bg1ARef.current) {
-      bg1ARef.current.currentTime = 0;
-      bg1ARef.current.play().catch(() => {});
+    // Pastikan video bg1 mulai berputar
+    if (bg1Ref.current) {
+      bg1Ref.current.currentTime = 0;
+      bg1Ref.current.play().catch(() => {});
     }
-    setActiveBg1Layer('A');
 
-    // bg2 TIDAK langsung diputar – IntersectionObserver yang mengontrolnya
-    // supaya tidak ada 3 video berjalan bersamaan
-
-    // Tepat di detik ke-4: tampilkan Card Hero (video bg1 tetap lanjut bermain halus)
+    // Tepat di detik ke-4: tampilkan Card Hero
     setTimeout(() => {
       setIsHeroCardVisible(true);
       setIsInvitationRevealed(true);
@@ -122,6 +93,7 @@ export default function App() {
     setIsCoverOpen(false);
   };
 
+  // AudioPlayer selalu tampil agar musik bisa langsung play saat link dibuka
   return (
     <div className="text-inverse-surface relative min-h-screen selection:bg-secondary selection:text-primary-container bg-black">
       {/* Fixed Fullscreen Background Video bg2 (Latar belakang tetap untuk seluruh bagian konten di bawah Hero) */}
@@ -134,11 +106,10 @@ export default function App() {
           muted
           playsInline
           preload="none"
-          style={{ willChange: 'transform' }}
           className="w-full h-full object-cover object-top select-none"
         />
         {/* Soft Contrast Tint */}
-        <div className="absolute inset-0 bg-black/25 backdrop-blur-[0.5px]"></div>
+        <div className="absolute inset-0 bg-black/35"></div>
         {/* Soft Gold Paper Texture */}
         <div className="absolute inset-0 texture-overlay mix-blend-overlay opacity-15"></div>
       </div>
@@ -151,44 +122,27 @@ export default function App() {
         guestName={guestName}
       />
 
-      {/* SECTION 1: FULLSCREEN HERO / INTRO SECTION (Dual layer crossfade untuk transisi looping super mulus) */}
+      {/* SECTION 1: FULLSCREEN HERO / INTRO SECTION */}
       <section 
         ref={heroSectionRef}
         className="relative z-10 min-h-screen w-full flex flex-col items-center justify-center px-4 sm:px-6 py-12 overflow-hidden snap-card bg-black shadow-2xl"
         id="invite"
       >
-        {/* Fullscreen Dual Video bg1 for ultra-smooth crossfade looping */}
+        {/* Fullscreen Single Video bg1 */}
         <div className="absolute inset-0 z-0 overflow-hidden pointer-events-none bg-black">
-          {/* Layer A */}
           <video
-            ref={bg1ARef}
+            ref={bg1Ref}
             src="/bg1.mp4"
             autoPlay
+            loop
             muted
             playsInline
             preload="auto"
-            onTimeUpdate={() => handleBg1TimeUpdate('A')}
-            style={{ willChange: 'opacity, transform' }}
-            className={`absolute inset-0 w-full h-full object-cover object-center select-none transition-opacity duration-1000 ease-in-out ${
-              activeBg1Layer === 'A' ? 'opacity-100' : 'opacity-0'
-            }`}
-          />
-          {/* Layer B */}
-          <video
-            ref={bg1BRef}
-            src="/bg1.mp4"
-            muted
-            playsInline
-            preload="auto"
-            onTimeUpdate={() => handleBg1TimeUpdate('B')}
-            style={{ willChange: 'opacity, transform' }}
-            className={`absolute inset-0 w-full h-full object-cover object-center select-none transition-opacity duration-1000 ease-in-out ${
-              activeBg1Layer === 'B' ? 'opacity-100' : 'opacity-0'
-            }`}
+            className="absolute inset-0 w-full h-full object-cover object-center select-none"
           />
 
           {/* Dark Contrast Tint */}
-          <div className="absolute inset-0 bg-black/35 backdrop-blur-[0.5px]"></div>
+          <div className="absolute inset-0 bg-black/40"></div>
           {/* Paper Texture */}
           <div className="absolute inset-0 texture-overlay mix-blend-overlay opacity-20"></div>
         </div>
@@ -256,8 +210,8 @@ export default function App() {
       {/* Bottom Nav Bar - Mobile (Tampil setelah card hero terbuka) */}
       {isInvitationRevealed && <BottomNavBar />}
 
-      {/* Floating Audio Player (Selalu aktif di DOM agar musik langsung berputar seketika) */}
-      <AudioPlayer autoPlayTrigger={isAudioAutoPlay} showButton={isInvitationRevealed || isHeroCardVisible} />
+      {/* Floating Audio Player - selalu di DOM, musik bisa langsung play saat halaman dibuka */}
+      <AudioPlayer showButton={isInvitationRevealed || isHeroCardVisible} />
     </div>
   );
 }
