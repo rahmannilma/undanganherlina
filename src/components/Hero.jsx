@@ -34,20 +34,20 @@ export default function Hero({ guestName, isRevealed = true }) {
           The Wedding Of
         </p>
 
-        {/* Names entering alternately (Ultra-Slow & Smooth) */}
-        <div className="font-display-names leading-tight my-2 font-serif tracking-wide">
+        {/* Names entering alternately in Elegant Cursive Script (Great Vibes) */}
+        <div className="font-script leading-tight my-2 tracking-wide">
           {/* Groom Name (Slide in slowly from Left) */}
           <div
-            className={`text-[32px] sm:text-[40px] text-[#7A5816] font-semibold ${isRevealed ? 'animate-slide-left' : 'opacity-0'
+            className={`text-[36px] sm:text-[44px] text-[#7A5816] font-normal ${isRevealed ? 'animate-slide-left' : 'opacity-0'
               }`}
             style={{ opacity: 0, animationDelay: '450ms', animationFillMode: 'both' }}
           >
-            Muhammad arfan
+            Muhammad Arfan
           </div>
 
           {/* Ampersand & (Pop in slowly at Center) */}
           <div
-            className={`text-2xl sm:text-3xl font-serif my-1 text-[#8E691A] font-semibold inline-block ${isRevealed ? 'animate-pop-amp' : 'opacity-0'
+            className={`text-2xl sm:text-3xl font-serif my-0.5 text-[#8E691A] font-semibold inline-block ${isRevealed ? 'animate-pop-amp' : 'opacity-0'
               }`}
             style={{ opacity: 0, animationDelay: '700ms', animationFillMode: 'both' }}
           >
@@ -56,7 +56,7 @@ export default function Hero({ guestName, isRevealed = true }) {
 
           {/* Bride Name (Slide in slowly from Right) */}
           <div
-            className={`text-[32px] sm:text-[40px] text-[#7A5816] font-semibold ${isRevealed ? 'animate-slide-right' : 'opacity-0'
+            className={`text-[38px] sm:text-[46px] text-[#7A5816] font-normal ${isRevealed ? 'animate-slide-right' : 'opacity-0'
               }`}
             style={{ opacity: 0, animationDelay: '900ms', animationFillMode: 'both' }}
           >
