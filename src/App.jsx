@@ -26,11 +26,22 @@ export default function App() {
   const heroSectionRef = useRef(null);
 
   useEffect(() => {
-    // Read guest name from query parameters e.g., ?to=Nama+Tamu or ?name=Nama+Tamu
+    // Read guest name from query parameters e.g., ?to=Nama+Tamu, ?to=abd_rahman, or ?to=abd%20rahman
     const params = new URLSearchParams(window.location.search);
     const toParam = params.get('to') || params.get('name') || params.get('u');
     if (toParam) {
-      setGuestName(decodeURIComponent(toParam));
+      try {
+        const decoded = decodeURIComponent(toParam.replace(/\+/g, ' ')).replace(/_/g, ' ').trim();
+        // Buat huruf awal setiap kata menjadi kapital rapi (misal: "abd rahman" -> "Abd Rahman")
+        const formatted = decoded
+          .split(' ')
+          .filter(Boolean)
+          .map(w => w.charAt(0).toUpperCase() + w.slice(1))
+          .join(' ');
+        setGuestName(formatted || decoded);
+      } catch {
+        setGuestName(toParam.replace(/\+/g, ' ').replace(/_/g, ' '));
+      }
     }
   }, []);
 
