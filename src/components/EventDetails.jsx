@@ -31,8 +31,8 @@ export default function EventDetails() {
 
   const createCalendarUrl = () => {
     const title = encodeURIComponent("The Wedding of Muhammad Arfan & Herlina");
-    const details = encodeURIComponent("Akad Nikah: 11:00 - Selesai WITA\nResepsi: 12:00 - Selesai WITA\nLokasi: Belakang Pasar Lekbeng (Kediaman Mempelai Wanita)");
-    const location = encodeURIComponent("Belakang Pasar Lekbeng (Kediaman Mempelai Wanita)");
+    const details = encodeURIComponent("Akad Nikah: 11:00 - Selesai WITA\nResepsi: 12:00 - Selesai WITA\nLokasi: Belakang Launa Graha Kalukku (Pasar Lekbeng), Lingk. Salubiru, Kel. Kalukku (Kediaman Mempelai Wanita)");
+    const location = encodeURIComponent("Belakang Launa Graha Kalukku (Pasar Lekbeng), Lingk. Salubiru, Kel. Kalukku");
     const start = "20260927T030000Z";
     const end = "20260927T080000Z";
     return `https://calendar.google.com/calendar/render?action=TEMPLATE&text=${title}&dates=${start}/${end}&details=${details}&location=${location}`;
@@ -101,24 +101,40 @@ export default function EventDetails() {
 
         {/* Location & Interactive Embedded Maps */}
         <div
-          className={`pt-2 transition-all duration-1000 delay-600 ease-smooth-out ${isInView ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-6'
+          className={`space-y-4 pt-1 transition-all duration-1000 delay-600 ease-smooth-out ${isInView ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-6'
             }`}
         >
-          <h3 className="font-headline-md text-base text-secondary mb-1 font-serif">
-            Belakang Launa Graha Kalukku (Pasar Lekbeng),Ling Salubiru,Kel Kalukku
-          </h3>
-          <div className="flex items-center justify-center gap-1.5 text-secondary mb-1">
-            <span className="material-symbols-outlined text-base">home</span>
-            <span className="font-body-sm text-[12px] sm:text-xs font-medium tracking-wide text-inverse-surface/90">
+          {/* Card Lokasi / Venue */}
+          <div className="p-4 sm:p-5 rounded-2xl border border-secondary/35 bg-surface-container/35 backdrop-blur-md shadow-md">
+            <div className="inline-block p-1.5 rounded-full border border-secondary/30 mb-2 bg-secondary/10 shadow-sm">
+              <span className="material-symbols-outlined text-secondary text-base">home</span>
+            </div>
+            
+            <h3 className="font-label-caps text-xs text-secondary mb-1.5 uppercase tracking-widest font-semibold">
+              Lokasi Acara
+            </h3>
+
+            <p className="font-headline-md text-sm sm:text-base font-semibold text-inverse-surface mb-2 tracking-wide">
               Kediaman Mempelai Wanita
-            </span>
+            </p>
+
+            <div className="w-12 h-0.5 bg-secondary/40 mx-auto mb-3 rounded-full"></div>
+
+            <div className="space-y-1">
+              <p className="font-body-lg text-sm sm:text-base text-inverse-surface font-semibold leading-snug">
+                Belakang Launa Graha Kalukku
+              </p>
+              <p className="font-body-sm text-xs sm:text-sm text-secondary font-bold tracking-wide">
+                (Pasar Lekbeng)
+              </p>
+              <p className="font-body-sm text-xs sm:text-sm text-inverse-surface/85 font-medium">
+                Lingk. Salubiru, Kel. Kalukku
+              </p>
+            </div>
           </div>
-          <p className="font-body-sm text-[11px] text-inverse-surface/70 mb-4">
-            Lokasi Acara Pernikahan
-          </p>
 
           {/* Embedded Google Maps Frame */}
-          <div className="w-full h-52 sm:h-60 rounded-2xl overflow-hidden border border-secondary/45 shadow-md mb-4 relative bg-black/20">
+          <div className="w-full h-52 sm:h-60 rounded-2xl overflow-hidden border border-secondary/45 shadow-md relative bg-black/20">
             <iframe
               src="https://www.google.com/maps/embed?pb=!1m17!1m12!1m3!1d7369.622369124937!2d119.05837487653854!3d-2.5540842403652397!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m2!1m1!2zMsKwMzMnMjAuMyJTIDExOcKwMDMnNDcuMCJF!5e0!3m2!1sid!2sid!4v1788362461509!5m2!1sid!2sid"
               width="100%"

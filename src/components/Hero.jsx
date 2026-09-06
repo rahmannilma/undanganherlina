@@ -21,7 +21,7 @@ export default function Hero({ guestName, isRevealed = true }) {
             style={{ opacity: 0, animationDelay: '150ms', animationFillMode: 'both' }}
           >
             <p className="font-label-caps text-[11px] text-inverse-surface/90">
-              Kepada Yth: <span className="font-semibold text-secondary">{guestName}</span>
+              Kepada Yth: <span className="font-bold text-[#7A5816]">{guestName}</span>
             </p>
           </div>
         )}

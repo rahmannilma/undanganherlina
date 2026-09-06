@@ -15,6 +15,12 @@ export default function ClosingSection() {
             Muhammad Arfan &amp; Herlina
           </p>
         </div>
+
+        <div className="pt-6 sm:pt-8">
+          <p className="font-body-sm text-[11px] sm:text-xs text-inverse-surface/75 tracking-wider font-medium">
+            Created by <span className="text-secondary font-semibold">Dunia Undangan</span>
+          </p>
+        </div>
       </div>
     </section>
   );
