@@ -31,9 +31,9 @@ export default function EventDetails() {
 
   const createCalendarUrl = () => {
     const title = encodeURIComponent("The Wedding of Muhammad Arfan & Herlina");
-    const details = encodeURIComponent("Akad Nikah: 09:00 - 11:00 WIB\nResepsi: 12:00 - 15:00 WIB\nLokasi: Belakang Pasar Lekbeng");
-    const location = encodeURIComponent("Belakang Pasar Lekbeng");
-    const start = "20260927T020000Z";
+    const details = encodeURIComponent("Akad Nikah: 11:00 - Selesai WITA\nResepsi: 12:00 - Selesai WITA\nLokasi: Belakang Pasar Lekbeng (Kediaman Mempelai Wanita)");
+    const location = encodeURIComponent("Belakang Pasar Lekbeng (Kediaman Mempelai Wanita)");
+    const start = "20260927T030000Z";
     const end = "20260927T080000Z";
     return `https://calendar.google.com/calendar/render?action=TEMPLATE&text=${title}&dates=${start}/${end}&details=${details}&location=${location}`;
   };
@@ -107,7 +107,13 @@ export default function EventDetails() {
           <h3 className="font-headline-md text-base text-secondary mb-1 font-serif">
             Belakang Pasar Lekbeng
           </h3>
-          <p className="font-body-sm text-[12px] text-inverse-surface/80 mb-4">
+          <div className="flex items-center justify-center gap-1.5 text-secondary mb-1">
+            <span className="material-symbols-outlined text-base">home</span>
+            <span className="font-body-sm text-[12px] sm:text-xs font-medium tracking-wide text-inverse-surface/90">
+              Kediaman Mempelai Wanita
+            </span>
+          </div>
+          <p className="font-body-sm text-[11px] text-inverse-surface/70 mb-4">
             Lokasi Acara Pernikahan
           </p>
 

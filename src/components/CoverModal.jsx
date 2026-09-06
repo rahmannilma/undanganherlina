@@ -11,6 +11,11 @@ export default function CoverModal({ isOpen, onClose, onStartIntro, guestName })
     if (isOpening) return;
     setIsOpening(true);
 
+    // Langsung putar musik seketika dalam user gesture klik (100% didukung browser mobile)
+    if (typeof window !== 'undefined' && typeof window.__playWeddingMusic === 'function') {
+      window.__playWeddingMusic();
+    }
+
     const goldPalette = ['#D4AF37', '#FFDF73', '#F3E5AB', '#FAF0E6', '#ECC440', '#FFE4B5'];
 
     // Slow-motion, graceful floating confetti
@@ -155,7 +160,7 @@ export default function CoverModal({ isOpen, onClose, onStartIntro, guestName })
         </div>
 
 
-        <div className="pt-4 flex justify-center">
+        <div className="pt-4 flex flex-col items-center gap-2.5">
           <button
             onClick={handleOpenClick}
             disabled={isOpening}
@@ -174,6 +179,9 @@ export default function CoverModal({ isOpen, onClose, onStartIntro, guestName })
               {isOpening ? 'hourglass_top' : 'mail'}
             </span>
           </button>
+          <span className="font-label-caps text-[11px] sm:text-xs tracking-[0.25em] text-white/95 uppercase font-medium [text-shadow:_0_2px_8px_rgba(0,0,0,0.9)]">
+            Buka Undangan
+          </span>
         </div>
       </div>
     </div>

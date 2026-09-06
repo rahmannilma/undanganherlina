@@ -18,6 +18,7 @@ export default function App() {
   const [isHeroCardVisible, setIsHeroCardVisible] = useState(false);
   const [isInvitationRevealed, setIsInvitationRevealed] = useState(false);
   const [isBg2Active, setIsBg2Active] = useState(false);
+  const [isAudioAutoPlay, setIsAudioAutoPlay] = useState(false);
 
   // Single video untuk bg1 (lebih ringan dari dual layer)
   const bg1Ref = useRef(null);
@@ -76,6 +77,9 @@ export default function App() {
   }, [isInvitationRevealed]);
 
   const handleStartIntro = () => {
+    // Pastikan musik langsung bunyi seketika tombol ditekan jika sebelumnya belum sempat terputar
+    setIsAudioAutoPlay(true);
+
     // Pastikan video bg1 mulai berputar
     if (bg1Ref.current) {
       bg1Ref.current.currentTime = 0;
@@ -210,8 +214,8 @@ export default function App() {
       {/* Bottom Nav Bar - Mobile (Tampil setelah card hero terbuka) */}
       {isInvitationRevealed && <BottomNavBar />}
 
-      {/* Floating Audio Player - selalu di DOM, musik bisa langsung play saat halaman dibuka */}
-      <AudioPlayer showButton={isInvitationRevealed || isHeroCardVisible} />
+      {/* Floating Audio Player - selalu di DOM, musik langsung bunyi saat halaman dibuka */}
+      <AudioPlayer autoPlayTrigger={isAudioAutoPlay} showButton={isInvitationRevealed || isHeroCardVisible} />
     </div>
   );
 }

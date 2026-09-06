@@ -16,16 +16,17 @@ export default function GallerySection() {
   const reqAnimRef = useRef(null);
   const resumeTimerRef = useRef(null);
 
-  // 13 Photos from 1.webp to 13.webp
-  const photos = Array.from({ length: 13 }, (_, i) => ({
-    id: i + 1,
-    src: `/${i + 1}.webp`,
-    alt: `Momen Bahagia Arfan & Herlina ${i + 1}`
+  // Foto momen (tanpa foto 10 dan 11)
+  const photoIds = [1, 2, 3, 4, 5, 6, 7, 8, 9, 12, 13];
+  const photos = photoIds.map((id) => ({
+    id,
+    src: `/${id}.webp`,
+    alt: `Momen Bahagia Arfan & Herlina ${id}`
   }));
 
   const totalPhotos = photos.length;
-  const angleStep = 360 / totalPhotos; // ~27.69 deg
-  const radius = 230; // 230px radius
+  const angleStep = 360 / totalPhotos; // ~32.73 deg
+  const radius = 225; // 225px radius untuk 11 foto agar proporsional
 
   // Keep refs in sync with state
   useEffect(() => {

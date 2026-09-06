@@ -56,7 +56,7 @@ export function GroomSection({ onPhotoClick }) {
           }`}
       >
         <img
-          className="w-full h-full object-cover rounded-xl grayscale group-hover:grayscale-0 transition-all duration-700 group-hover:scale-105"
+          className="w-full h-full object-cover rounded-xl transition-all duration-700 group-hover:scale-105"
           alt="Muhammad Arfan"
           src="/arfan.webp"
           loading="lazy"
@@ -165,7 +165,7 @@ export function BrideSection({ onPhotoClick }) {
           }`}
       >
         <img
-          className="w-full h-full object-cover rounded-xl grayscale group-hover:grayscale-0 transition-all duration-700 group-hover:scale-105"
+          className="w-full h-full object-cover rounded-xl transition-all duration-700 group-hover:scale-105"
           alt="Herlina"
           src="/herlina.webp"
           loading="lazy"
