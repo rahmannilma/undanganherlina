@@ -1,11 +1,14 @@
 import { createClient } from '@supabase/supabase-js';
 
-const supabaseUrl = import.meta.env.VITE_SUPABASE_URL || '';
-const supabaseAnonKey = import.meta.env.VITE_SUPABASE_ANON_KEY || '';
+const defaultUrl = 'https://boxpqihcknauyahaeyoh.supabase.co';
+const defaultKey = 'sb_publishable_LC3Dt3--UJZ0bzW9SFQodw_7qO8IkaE';
+
+const supabaseUrl = import.meta.env.VITE_SUPABASE_URL || defaultUrl;
+const supabaseAnonKey = import.meta.env.VITE_SUPABASE_ANON_KEY || defaultKey;
 
 export const isSupabaseConfigured = Boolean(
-  supabaseUrl && 
-  supabaseAnonKey && 
+  supabaseUrl &&
+  supabaseAnonKey &&
   !supabaseUrl.includes('YOUR_SUPABASE_URL') &&
   !supabaseAnonKey.includes('YOUR_SUPABASE_ANON_KEY')
 );

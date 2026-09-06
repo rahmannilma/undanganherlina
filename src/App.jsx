@@ -26,51 +26,11 @@ export default function App() {
   const heroSectionRef = useRef(null);
 
   useEffect(() => {
-    // Ambil parameter nama tamu dari URL (baik dari ?to=... maupun #?...), mendukung berbagai nama parameter
-    const extractGuestName = () => {
-      const searchStr = window.location.search || '';
-      const hashStr = window.location.hash.includes('?') ? window.location.hash.slice(window.location.hash.indexOf('?') + 1) : '';
-
-      const searchParams = new URLSearchParams(searchStr);
-      const hashParams = new URLSearchParams(hashStr);
-
-      const possibleKeys = ['to', 'nama', 'name', 'tamu', 'kepada', 'kpd', 'guest', 'dear', 'u'];
-      let foundValue = null;
-
-      for (const k of possibleKeys) {
-        foundValue = searchParams.get(k) || hashParams.get(k);
-        if (foundValue) break;
-      }
-
-      // Jika belum ketemu, telusuri semua entri parameter tanpa case-sensitive
-      if (!foundValue) {
-        for (const [k, v] of [...searchParams.entries(), ...hashParams.entries()]) {
-          if (possibleKeys.includes(k.trim().toLowerCase()) && v) {
-            foundValue = v;
-            break;
-          }
-        }
-      }
-
-      if (foundValue) {
-        try {
-          const decoded = decodeURIComponent(foundValue.replace(/\+/g, ' ')).replace(/_/g, ' ').trim();
-          const formatted = decoded
-            .split(' ')
-            .filter(Boolean)
-            .map(w => w.charAt(0).toUpperCase() + w.slice(1))
-            .join(' ');
-          return formatted || decoded;
-        } catch {
-          return foundValue.replace(/\+/g, ' ').replace(/_/g, ' ').trim();
-        }
-      }
-      return '';
-    };
-
-    const detected = extractGuestName();
-    if (detected) {
-      setGuestName(detected);
+    // Read guest name from query parameters e.g., ?to=Nama+Tamu or ?name=Nama+Tamu
+    const params = new URLSearchParams(window.location.search);
+    const toParam = params.get('to') || params.get('name') || params.get('u');
+    if (toParam) {
+      setGuestName(decodeURIComponent(toParam));
     }
   }, []);
 
@@ -97,12 +57,12 @@ export default function App() {
           }
           setIsBg2Active(true);
           if (bg2Ref.current && bg2Ref.current.paused) {
-            bg2Ref.current.play().catch(() => {});
+            bg2Ref.current.play().catch(() => { });
           }
         } else {
           // Hero kembali terlihat → resume bg1 & pause bg2 untuk hemat GPU
           if (bg1Ref.current && bg1Ref.current.paused && isInvitationRevealed) {
-            bg1Ref.current.play().catch(() => {});
+            bg1Ref.current.play().catch(() => { });
           }
           setIsBg2Active(false);
           if (bg2Ref.current && !bg2Ref.current.paused) {
@@ -123,7 +83,7 @@ export default function App() {
     // Pastikan video bg1 mulai berputar
     if (bg1Ref.current) {
       bg1Ref.current.currentTime = 0;
-      bg1Ref.current.play().catch(() => {});
+      bg1Ref.current.play().catch(() => { });
     }
 
     // Tepat di detik ke-4: tampilkan Card Hero
@@ -167,7 +127,7 @@ export default function App() {
       />
 
       {/* SECTION 1: FULLSCREEN HERO / INTRO SECTION */}
-      <section 
+      <section
         ref={heroSectionRef}
         className="relative z-10 min-h-screen w-full flex flex-col items-center justify-center px-4 sm:px-6 py-12 overflow-hidden snap-card bg-black shadow-2xl"
         id="invite"
@@ -192,21 +152,19 @@ export default function App() {
         </div>
 
         {/* Hero Card - Muncul pada detik ke-4 video intro */}
-        <div 
-          className={`relative z-10 w-full max-w-[350px] sm:max-w-[390px] mx-auto transition-all duration-[1400ms] ease-smooth-out transform will-change-[opacity,transform] ${
-            isHeroCardVisible
+        <div
+          className={`relative z-10 w-full max-w-[350px] sm:max-w-[390px] mx-auto transition-all duration-[1400ms] ease-smooth-out transform will-change-[opacity,transform] ${isHeroCardVisible
               ? 'opacity-100 scale-100 translate-y-0 filter-none'
               : 'opacity-0 scale-90 translate-y-10 filter blur-[4px] pointer-events-none'
-          }`}
+            }`}
         >
           <Hero guestName={guestName} isRevealed={isHeroCardVisible} />
         </div>
 
         {/* Scroll Down Indicator */}
-        <div 
-          className={`absolute bottom-6 left-1/2 -translate-x-1/2 z-10 text-secondary/75 flex flex-col items-center gap-1 transition-all duration-1000 ${
-            isHeroCardVisible ? 'opacity-100 translate-y-0 animate-bounce' : 'opacity-0 translate-y-4 pointer-events-none'
-          }`}
+        <div
+          className={`absolute bottom-6 left-1/2 -translate-x-1/2 z-10 text-secondary/75 flex flex-col items-center gap-1 transition-all duration-1000 ${isHeroCardVisible ? 'opacity-100 translate-y-0 animate-bounce' : 'opacity-0 translate-y-4 pointer-events-none'
+            }`}
         >
           <span className="font-label-caps text-[10px] tracking-widest uppercase text-white/75 drop-shadow-sm">Scroll</span>
           <span className="material-symbols-outlined text-lg drop-shadow-sm">keyboard_double_arrow_down</span>
@@ -259,3 +217,4 @@ export default function App() {
     </div>
   );
 }
+

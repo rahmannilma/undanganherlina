@@ -36,10 +36,10 @@ export default function RsvpSection({ defaultGuestName = '' }) {
 
   useEffect(() => {
     if (defaultGuestName) {
-      setFormData(prev => ({ ...prev, name: defaultGuestName }));
+      setFormData((prev) => ({ ...prev, name: defaultGuestName }));
     }
 
-    // 1. Muat dulu data dari penyimpanan lokal agar ucapan tidak hilang saat reload
+    // 1. Muat data cadangan dari localStorage
     const saved = localStorage.getItem('wedding_rsvp_wishes');
     if (saved) {
       try {
@@ -52,7 +52,7 @@ export default function RsvpSection({ defaultGuestName = '' }) {
       }
     }
 
-    // 2. Jika Supabase aktif, ambil data terbaru dari Supabase
+    // 2. Ambil data dari Supabase
     if (isSupabaseConfigured && supabase) {
       const fetchWishes = async () => {
         try {
@@ -65,7 +65,7 @@ export default function RsvpSection({ defaultGuestName = '' }) {
             setWishes(data);
             localStorage.setItem('wedding_rsvp_wishes', JSON.stringify(data));
           } else if (error) {
-            console.warn('Supabase fetch error (pastikan tabel wishes sudah dibuat):', error.message);
+            console.warn('Supabase fetch error:', error.message);
           }
         } catch (err) {
           console.error('Gagal mengambil data dari Supabase:', err);
@@ -74,7 +74,7 @@ export default function RsvpSection({ defaultGuestName = '' }) {
 
       fetchWishes();
 
-      // Dengarkan ucapan baru secara real-time
+      // Realtime listener
       const channel = supabase
         .channel('realtime_wishes')
         .on(
@@ -129,7 +129,7 @@ export default function RsvpSection({ defaultGuestName = '' }) {
       message: formData.message.trim() || defaultMsg
     };
 
-    // Simpan langsung ke tampilan & penyimpanan lokal agar ucapan tidak hilang
+    // Tampilkan confetti & simpan lokal
     triggerConfetti();
     const tempWish = {
       id: Date.now(),
@@ -152,16 +152,14 @@ export default function RsvpSection({ defaultGuestName = '' }) {
           .insert([wishPayload])
           .select();
 
-        if (error) {
-          console.error('Supabase error saat insert wishes:', error);
-          alert('Pemberitahuan: Tabel "wishes" belum ada di Supabase atau izin RLS belum diaktifkan! Pesan Anda tersimpan di browser untuk sementara.\n\nDetail error: ' + error.message);
-        } else if (data && data.length > 0) {
-          // Perbarui dengan data id resmi dari Supabase
+        if (!error && data && data.length > 0) {
           setWishes((prev) => {
             const updated = prev.map((w) => (w.id === tempWish.id ? data[0] : w));
             localStorage.setItem('wedding_rsvp_wishes', JSON.stringify(updated));
             return updated;
           });
+        } else if (error) {
+          console.error('Supabase insert error:', error.message);
         }
       } catch (err) {
         console.error('Gagal mengirim ke Supabase:', err);
@@ -174,7 +172,10 @@ export default function RsvpSection({ defaultGuestName = '' }) {
   };
 
   return (
-    <section className="w-full text-center p-6 sm:p-7 bg-primary-container/45 backdrop-blur-lg rounded-3xl border border-secondary/50 shadow-2xl relative overflow-hidden" id="rsvp">
+    <section
+      className="w-full text-center p-6 sm:p-7 bg-primary-container/45 backdrop-blur-lg rounded-3xl border border-secondary/50 shadow-2xl relative overflow-hidden"
+      id="rsvp"
+    >
       <h2 className="font-headline-md text-xl sm:text-2xl text-secondary mb-2">
         RSVP &amp; Ucapan
       </h2>
@@ -186,7 +187,7 @@ export default function RsvpSection({ defaultGuestName = '' }) {
       <div className="flex items-center justify-center gap-1.5 mb-6">
         <span className={`w-2 h-2 rounded-full ${isSupabaseConfigured ? 'bg-emerald-400 animate-pulse' : 'bg-amber-400'}`}></span>
         <span className="font-mono text-[10px] text-inverse-surface/70">
-          {isSupabaseConfigured ? 'Database Online' : 'Database Belum Terhubung di Vercel'}
+          {isSupabaseConfigured ? 'Database Online' : 'Database Belum Terhubung'}
         </span>
       </div>
 
@@ -321,7 +322,7 @@ export default function RsvpSection({ defaultGuestName = '' }) {
         </form>
       )}
 
-      {/* Wishes List (Hanya tampil jika sudah ada ucapan yang masuk) */}
+      {/* Wishes List (Hanya tampil jika sudah ada ucapan) */}
       {wishes.length > 0 && (
         <div className="mt-8 text-left">
           <div className="flex items-center justify-between mb-4">
@@ -346,8 +347,11 @@ export default function RsvpSection({ defaultGuestName = '' }) {
                   <h4 className="font-semibold text-xs text-secondary">
                     {item.name}
                   </h4>
-                  <span className={`text-[10px] px-2 py-0.5 rounded-full font-label-caps ${item.attendance === 'yes' ? 'bg-secondary/20 text-secondary' : 'bg-inverse-surface/10 text-inverse-surface/70'
-                    }`}>
+                  <span
+                    className={`text-[10px] px-2 py-0.5 rounded-full font-label-caps ${
+                      item.attendance === 'yes' ? 'bg-secondary/20 text-secondary' : 'bg-inverse-surface/10 text-inverse-surface/70'
+                    }`}
+                  >
                     {item.attendance === 'yes' ? 'Hadir' : 'Absen'}
                   </span>
                 </div>

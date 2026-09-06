@@ -31,8 +31,8 @@ export default function EventDetails() {
 
   const createCalendarUrl = () => {
     const title = encodeURIComponent("The Wedding of Muhammad Arfan & Herlina");
-    const details = encodeURIComponent("Akad Nikah: 11:00 - Selesai WITA\nResepsi: 12:00 - Selesai WITA\nLokasi: Belakang Launa Graha Kalukku (Pasar Lekbeng), Lingkungan Salubiru, Kelurahan Kalukku (Kediaman Mempelai Wanita)");
-    const location = encodeURIComponent("Belakang Launa Graha Kalukku (Pasar Lekbeng), Lingkungan Salubiru, Kelurahan Kalukku");
+    const details = encodeURIComponent("Akad Nikah: 11:00 - Selesai WITA\nResepsi: 12:00 - Selesai WITA\nLokasi: Belakang Pasar Lekbeng (Kediaman Mempelai Wanita)");
+    const location = encodeURIComponent("Belakang Pasar Lekbeng (Kediaman Mempelai Wanita)");
     const start = "20260927T030000Z";
     const end = "20260927T080000Z";
     return `https://calendar.google.com/calendar/render?action=TEMPLATE&text=${title}&dates=${start}/${end}&details=${details}&location=${location}`;
@@ -104,21 +104,17 @@ export default function EventDetails() {
           className={`pt-2 transition-all duration-1000 delay-600 ease-smooth-out ${isInView ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-6'
             }`}
         >
-          <div className="inline-flex items-center justify-center gap-1.5 px-3 py-1 rounded-full border border-secondary/40 bg-secondary/10 text-secondary mb-2.5">
-            <span className="material-symbols-outlined text-sm">home</span>
-            <span className="font-label-caps text-[11px] uppercase tracking-wider font-semibold">
+          <h3 className="font-headline-md text-base text-secondary mb-1 font-serif">
+            Belakang Launa Graha Kalukku (Pasar Lekbeng),Ling Salubiru,Kel Kalukku
+          </h3>
+          <div className="flex items-center justify-center gap-1.5 text-secondary mb-1">
+            <span className="material-symbols-outlined text-base">home</span>
+            <span className="font-body-sm text-[12px] sm:text-xs font-medium tracking-wide text-inverse-surface/90">
               Kediaman Mempelai Wanita
             </span>
           </div>
-
-          <h3 className="font-headline-md text-base sm:text-lg text-secondary font-serif leading-snug">
-            Belakang Launa Graha Kalukku
-          </h3>
-          <p className="font-body-md text-xs sm:text-[13px] text-secondary/85 font-medium mt-0.5 mb-1">
-            (Pasar Lekbeng)
-          </p>
-          <p className="font-body-sm text-[11px] sm:text-xs text-inverse-surface/75 leading-relaxed mb-4">
-            Lingkungan Salubiru, Kelurahan Kalukku
+          <p className="font-body-sm text-[11px] text-inverse-surface/70 mb-4">
+            Lokasi Acara Pernikahan
           </p>
 
           {/* Embedded Google Maps Frame */}
