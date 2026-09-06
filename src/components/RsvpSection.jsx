@@ -39,8 +39,21 @@ export default function RsvpSection({ defaultGuestName = '' }) {
       setFormData(prev => ({ ...prev, name: defaultGuestName }));
     }
 
+    // 1. Muat dulu data dari penyimpanan lokal agar ucapan tidak hilang saat reload
+    const saved = localStorage.getItem('wedding_rsvp_wishes');
+    if (saved) {
+      try {
+        const parsed = JSON.parse(saved);
+        if (Array.isArray(parsed) && parsed.length > 0) {
+          setWishes(parsed);
+        }
+      } catch (e) {
+        console.error(e);
+      }
+    }
+
+    // 2. Jika Supabase aktif, ambil data terbaru dari Supabase
     if (isSupabaseConfigured && supabase) {
-      // Ambil data ucapan dari Supabase
       const fetchWishes = async () => {
         try {
           const { data, error } = await supabase
@@ -50,6 +63,9 @@ export default function RsvpSection({ defaultGuestName = '' }) {
 
           if (!error && data) {
             setWishes(data);
+            localStorage.setItem('wedding_rsvp_wishes', JSON.stringify(data));
+          } else if (error) {
+            console.warn('Supabase fetch error (pastikan tabel wishes sudah dibuat):', error.message);
           }
         } catch (err) {
           console.error('Gagal mengambil data dari Supabase:', err);
@@ -68,7 +84,9 @@ export default function RsvpSection({ defaultGuestName = '' }) {
             if (payload.new) {
               setWishes((prev) => {
                 if (prev.some((w) => w.id === payload.new.id)) return prev;
-                return [payload.new, ...prev];
+                const next = [payload.new, ...prev];
+                localStorage.setItem('wedding_rsvp_wishes', JSON.stringify(next));
+                return next;
               });
             }
           }
@@ -78,16 +96,6 @@ export default function RsvpSection({ defaultGuestName = '' }) {
       return () => {
         supabase.removeChannel(channel);
       };
-    } else {
-      // Fallback ke localStorage jika Supabase belum dikonfigurasi
-      const saved = localStorage.getItem('wedding_rsvp_wishes');
-      if (saved) {
-        try {
-          setWishes(JSON.parse(saved));
-        } catch (e) {
-          console.error(e);
-        }
-      }
     }
   }, [defaultGuestName]);
 
@@ -121,6 +129,22 @@ export default function RsvpSection({ defaultGuestName = '' }) {
       message: formData.message.trim() || defaultMsg
     };
 
+    // Simpan langsung ke tampilan & penyimpanan lokal agar ucapan tidak hilang
+    triggerConfetti();
+    const tempWish = {
+      id: Date.now(),
+      ...wishPayload,
+      created_at: new Date().toISOString()
+    };
+
+    setWishes((prev) => {
+      const next = [tempWish, ...prev];
+      localStorage.setItem('wedding_rsvp_wishes', JSON.stringify(next));
+      return next;
+    });
+    setSubmitted(true);
+
+    // Kirim ke database Supabase
     if (isSupabaseConfigured && supabase) {
       try {
         const { data, error } = await supabase
@@ -128,41 +152,25 @@ export default function RsvpSection({ defaultGuestName = '' }) {
           .insert([wishPayload])
           .select();
 
-        if (!error && data && data.length > 0) {
-          triggerConfetti();
+        if (error) {
+          console.error('Supabase error saat insert wishes:', error);
+          alert('Pemberitahuan: Tabel "wishes" belum ada di Supabase atau izin RLS belum diaktifkan! Pesan Anda tersimpan di browser untuk sementara.\n\nDetail error: ' + error.message);
+        } else if (data && data.length > 0) {
+          // Perbarui dengan data id resmi dari Supabase
           setWishes((prev) => {
-            if (prev.some((w) => w.id === data[0].id)) return prev;
-            return [data[0], ...prev];
+            const updated = prev.map((w) => (w.id === tempWish.id ? data[0] : w));
+            localStorage.setItem('wedding_rsvp_wishes', JSON.stringify(updated));
+            return updated;
           });
-          setSubmitted(true);
-        } else {
-          console.error('Supabase error:', error);
-          // Fallback lokal jika ada kendala jaringan/tabel
-          fallbackLocalSubmit(wishPayload);
         }
       } catch (err) {
         console.error('Gagal mengirim ke Supabase:', err);
-        fallbackLocalSubmit(wishPayload);
       } finally {
         setIsSubmitting(false);
       }
     } else {
-      fallbackLocalSubmit(wishPayload);
       setIsSubmitting(false);
     }
-  };
-
-  const fallbackLocalSubmit = (payload) => {
-    triggerConfetti();
-    const newWish = {
-      id: Date.now(),
-      ...payload,
-      created_at: new Date().toISOString()
-    };
-    const updated = [newWish, ...wishes];
-    setWishes(updated);
-    localStorage.setItem('wedding_rsvp_wishes', JSON.stringify(updated));
-    setSubmitted(true);
   };
 
   return (
