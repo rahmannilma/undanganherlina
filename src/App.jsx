@@ -26,22 +26,51 @@ export default function App() {
   const heroSectionRef = useRef(null);
 
   useEffect(() => {
-    // Read guest name from query parameters e.g., ?to=Nama+Tamu, ?to=abd_rahman, or ?to=abd%20rahman
-    const params = new URLSearchParams(window.location.search);
-    const toParam = params.get('to') || params.get('name') || params.get('u');
-    if (toParam) {
-      try {
-        const decoded = decodeURIComponent(toParam.replace(/\+/g, ' ')).replace(/_/g, ' ').trim();
-        // Buat huruf awal setiap kata menjadi kapital rapi (misal: "abd rahman" -> "Abd Rahman")
-        const formatted = decoded
-          .split(' ')
-          .filter(Boolean)
-          .map(w => w.charAt(0).toUpperCase() + w.slice(1))
-          .join(' ');
-        setGuestName(formatted || decoded);
-      } catch {
-        setGuestName(toParam.replace(/\+/g, ' ').replace(/_/g, ' '));
+    // Ambil parameter nama tamu dari URL (baik dari ?to=... maupun #?...), mendukung berbagai nama parameter
+    const extractGuestName = () => {
+      const searchStr = window.location.search || '';
+      const hashStr = window.location.hash.includes('?') ? window.location.hash.slice(window.location.hash.indexOf('?') + 1) : '';
+
+      const searchParams = new URLSearchParams(searchStr);
+      const hashParams = new URLSearchParams(hashStr);
+
+      const possibleKeys = ['to', 'nama', 'name', 'tamu', 'kepada', 'kpd', 'guest', 'dear', 'u'];
+      let foundValue = null;
+
+      for (const k of possibleKeys) {
+        foundValue = searchParams.get(k) || hashParams.get(k);
+        if (foundValue) break;
       }
+
+      // Jika belum ketemu, telusuri semua entri parameter tanpa case-sensitive
+      if (!foundValue) {
+        for (const [k, v] of [...searchParams.entries(), ...hashParams.entries()]) {
+          if (possibleKeys.includes(k.trim().toLowerCase()) && v) {
+            foundValue = v;
+            break;
+          }
+        }
+      }
+
+      if (foundValue) {
+        try {
+          const decoded = decodeURIComponent(foundValue.replace(/\+/g, ' ')).replace(/_/g, ' ').trim();
+          const formatted = decoded
+            .split(' ')
+            .filter(Boolean)
+            .map(w => w.charAt(0).toUpperCase() + w.slice(1))
+            .join(' ');
+          return formatted || decoded;
+        } catch {
+          return foundValue.replace(/\+/g, ' ').replace(/_/g, ' ').trim();
+        }
+      }
+      return '';
+    };
+
+    const detected = extractGuestName();
+    if (detected) {
+      setGuestName(detected);
     }
   }, []);
 
