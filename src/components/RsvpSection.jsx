@@ -32,22 +32,7 @@ export default function RsvpSection({ defaultGuestName = '' }) {
 
   const [submitted, setSubmitted] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
-  const [wishes, setWishes] = useState([
-    {
-      id: 1,
-      name: 'Rian & Maya',
-      attendance: 'yes',
-      message: 'Selamat Muhammad Arfan & Herlina! Semoga menjadi keluarga yang sakinah, mawaddah, warahmah. Amin!',
-      created_at: new Date().toISOString()
-    },
-    {
-      id: 2,
-      name: 'Dimas Setiawan',
-      attendance: 'yes',
-      message: 'Happy wedding brother! Lancar sampai hari H ya!',
-      created_at: new Date(Date.now() - 3600000).toISOString()
-    }
-  ]);
+  const [wishes, setWishes] = useState([]);
 
   useEffect(() => {
     if (defaultGuestName) {
@@ -63,7 +48,7 @@ export default function RsvpSection({ defaultGuestName = '' }) {
             .select('*')
             .order('created_at', { ascending: false });
 
-          if (!error && data && data.length > 0) {
+          if (!error && data) {
             setWishes(data);
           }
         } catch (err) {
