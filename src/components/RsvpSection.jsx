@@ -305,25 +305,21 @@ export default function RsvpSection({ defaultGuestName = '' }) {
         </form>
       )}
 
-      {/* Wishes List */}
-      <div className="mt-8 text-left">
-        <div className="flex items-center justify-between mb-4">
-          <h3 className="font-headline-md text-secondary text-sm font-semibold">
-            Ucapan &amp; Doa ({wishes.length})
-          </h3>
-          {isSupabaseConfigured && (
-            <span className="inline-flex items-center gap-1 text-[9px] text-emerald-400/90 font-mono">
-              <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse"></span>
-              Live Sync
-            </span>
-          )}
-        </div>
+      {/* Wishes List (Hanya tampil jika sudah ada ucapan yang masuk) */}
+      {wishes.length > 0 && (
+        <div className="mt-8 text-left">
+          <div className="flex items-center justify-between mb-4">
+            <h3 className="font-headline-md text-secondary text-sm font-semibold">
+              Ucapan &amp; Doa ({wishes.length})
+            </h3>
+            {isSupabaseConfigured && (
+              <span className="inline-flex items-center gap-1 text-[9px] text-emerald-400/90 font-mono">
+                <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse"></span>
+                Live Sync
+              </span>
+            )}
+          </div>
 
-        {wishes.length === 0 ? (
-          <p className="text-center text-xs text-inverse-surface/50 py-4 italic">
-            Belum ada ucapan. Jadilah yang pertama memberikan doa restu!
-          </p>
-        ) : (
           <div className="space-y-3 max-h-60 overflow-y-auto pr-1">
             {wishes.map((item) => (
               <div
@@ -348,8 +344,8 @@ export default function RsvpSection({ defaultGuestName = '' }) {
               </div>
             ))}
           </div>
-        )}
-      </div>
+        </div>
+      )}
     </section>
   );
 }
