@@ -1,5 +1,26 @@
 import React, { useState, useEffect } from 'react';
 import confetti from 'canvas-confetti';
+import { supabase, isSupabaseConfigured } from '../utils/supabase';
+
+const formatWishDate = (dateVal) => {
+  if (!dateVal) return 'Baru saja';
+  if (typeof dateVal === 'string' && (dateVal.includes('lalu') || dateVal === 'Baru saja')) {
+    return dateVal;
+  }
+  try {
+    const d = new Date(dateVal);
+    if (isNaN(d.getTime())) return String(dateVal);
+    return d.toLocaleDateString('id-ID', {
+      day: 'numeric',
+      month: 'short',
+      year: 'numeric',
+      hour: '2-digit',
+      minute: '2-digit'
+    }) + ' WITA';
+  } catch {
+    return 'Baru saja';
+  }
+};
 
 export default function RsvpSection({ defaultGuestName = '' }) {
   const [formData, setFormData] = useState({
@@ -10,20 +31,21 @@ export default function RsvpSection({ defaultGuestName = '' }) {
   });
 
   const [submitted, setSubmitted] = useState(false);
+  const [isSubmitting, setIsSubmitting] = useState(false);
   const [wishes, setWishes] = useState([
     {
       id: 1,
       name: 'Rian & Maya',
       attendance: 'yes',
       message: 'Selamat Muhammad Arfan & Herlina! Semoga menjadi keluarga yang sakinah, mawaddah, warahmah. Amin!',
-      date: 'Baru saja'
+      created_at: new Date().toISOString()
     },
     {
       id: 2,
       name: 'Dimas Setiawan',
       attendance: 'yes',
       message: 'Happy wedding brother! Lancar sampai hari H ya!',
-      date: '1 jam yang lalu'
+      created_at: new Date(Date.now() - 3600000).toISOString()
     }
   ]);
 
@@ -31,20 +53,60 @@ export default function RsvpSection({ defaultGuestName = '' }) {
     if (defaultGuestName) {
       setFormData(prev => ({ ...prev, name: defaultGuestName }));
     }
-    const saved = localStorage.getItem('wedding_rsvp_wishes');
-    if (saved) {
-      try {
-        setWishes(JSON.parse(saved));
-      } catch (e) {
-        console.error(e);
+
+    if (isSupabaseConfigured && supabase) {
+      // Ambil data ucapan dari Supabase
+      const fetchWishes = async () => {
+        try {
+          const { data, error } = await supabase
+            .from('wishes')
+            .select('*')
+            .order('created_at', { ascending: false });
+
+          if (!error && data && data.length > 0) {
+            setWishes(data);
+          }
+        } catch (err) {
+          console.error('Gagal mengambil data dari Supabase:', err);
+        }
+      };
+
+      fetchWishes();
+
+      // Dengarkan ucapan baru secara real-time
+      const channel = supabase
+        .channel('realtime_wishes')
+        .on(
+          'postgres_changes',
+          { event: 'INSERT', schema: 'public', table: 'wishes' },
+          (payload) => {
+            if (payload.new) {
+              setWishes((prev) => {
+                if (prev.some((w) => w.id === payload.new.id)) return prev;
+                return [payload.new, ...prev];
+              });
+            }
+          }
+        )
+        .subscribe();
+
+      return () => {
+        supabase.removeChannel(channel);
+      };
+    } else {
+      // Fallback ke localStorage jika Supabase belum dikonfigurasi
+      const saved = localStorage.getItem('wedding_rsvp_wishes');
+      if (saved) {
+        try {
+          setWishes(JSON.parse(saved));
+        } catch (e) {
+          console.error(e);
+        }
       }
     }
   }, [defaultGuestName]);
 
-  const handleSubmit = (e) => {
-    e.preventDefault();
-    if (!formData.name.trim()) return;
-
+  const triggerConfetti = () => {
     try {
       confetti({
         particleCount: 60,
@@ -55,15 +117,63 @@ export default function RsvpSection({ defaultGuestName = '' }) {
     } catch (err) {
       console.log(err);
     }
+  };
 
-    const newWish = {
-      id: Date.now(),
-      name: formData.name,
+  const handleSubmit = async (e) => {
+    e.preventDefault();
+    if (!formData.name.trim() || isSubmitting) return;
+
+    setIsSubmitting(true);
+
+    const defaultMsg = formData.attendance === 'yes'
+      ? 'Hadir dan mendoakan kelancaran acara.'
+      : 'Mohon maaf belum bisa hadir.';
+
+    const wishPayload = {
+      name: formData.name.trim(),
       attendance: formData.attendance,
-      message: formData.message || (formData.attendance === 'yes' ? 'Hadir dan mendoakan kelancaran acara.' : 'Mohon maaf belum bisa hadir.'),
-      date: 'Baru saja'
+      guests: formData.attendance === 'yes' ? parseInt(formData.guests) || 1 : 0,
+      message: formData.message.trim() || defaultMsg
     };
 
+    if (isSupabaseConfigured && supabase) {
+      try {
+        const { data, error } = await supabase
+          .from('wishes')
+          .insert([wishPayload])
+          .select();
+
+        if (!error && data && data.length > 0) {
+          triggerConfetti();
+          setWishes((prev) => {
+            if (prev.some((w) => w.id === data[0].id)) return prev;
+            return [data[0], ...prev];
+          });
+          setSubmitted(true);
+        } else {
+          console.error('Supabase error:', error);
+          // Fallback lokal jika ada kendala jaringan/tabel
+          fallbackLocalSubmit(wishPayload);
+        }
+      } catch (err) {
+        console.error('Gagal mengirim ke Supabase:', err);
+        fallbackLocalSubmit(wishPayload);
+      } finally {
+        setIsSubmitting(false);
+      }
+    } else {
+      fallbackLocalSubmit(wishPayload);
+      setIsSubmitting(false);
+    }
+  };
+
+  const fallbackLocalSubmit = (payload) => {
+    triggerConfetti();
+    const newWish = {
+      id: Date.now(),
+      ...payload,
+      created_at: new Date().toISOString()
+    };
     const updated = [newWish, ...wishes];
     setWishes(updated);
     localStorage.setItem('wedding_rsvp_wishes', JSON.stringify(updated));
@@ -199,9 +309,12 @@ export default function RsvpSection({ defaultGuestName = '' }) {
           <div className="pt-2">
             <button
               type="submit"
-              className="w-full py-3 rounded-full border border-secondary bg-secondary text-primary-container font-label-caps text-xs hover:bg-transparent hover:text-secondary transition-all duration-300 uppercase tracking-widest group shadow-sm active:scale-[0.98]"
+              disabled={isSubmitting}
+              className={`w-full py-3 rounded-full border border-secondary bg-secondary text-primary-container font-label-caps text-xs transition-all duration-300 uppercase tracking-widest group shadow-sm ${
+                isSubmitting ? 'opacity-70 cursor-not-allowed' : 'hover:bg-transparent hover:text-secondary active:scale-[0.98]'
+              }`}
             >
-              Kirim Konfirmasi
+              {isSubmitting ? 'Mengirim Ucapan & Konfirmasi...' : 'Kirim Konfirmasi'}
             </button>
           </div>
         </form>
@@ -209,33 +322,48 @@ export default function RsvpSection({ defaultGuestName = '' }) {
 
       {/* Wishes List */}
       <div className="mt-8 text-left">
-        <h3 className="font-headline-md text-secondary text-center mb-4 text-sm font-semibold">
-          Ucapan &amp; Doa ({wishes.length})
-        </h3>
-        <div className="space-y-3 max-h-60 overflow-y-auto pr-1">
-          {wishes.map((item) => (
-            <div
-              key={item.id}
-              className="p-3 border border-secondary/25 bg-surface-container/35 backdrop-blur-md rounded-xl shadow-sm"
-            >
-              <div className="flex items-center justify-between mb-1">
-                <h4 className="font-semibold text-xs text-secondary">
-                  {item.name}
-                </h4>
-                <span className={`text-[10px] px-2 py-0.5 rounded-full font-label-caps ${item.attendance === 'yes' ? 'bg-secondary/20 text-secondary' : 'bg-inverse-surface/10 text-inverse-surface/70'
-                  }`}>
-                  {item.attendance === 'yes' ? 'Hadir' : 'Absen'}
+        <div className="flex items-center justify-between mb-4">
+          <h3 className="font-headline-md text-secondary text-sm font-semibold">
+            Ucapan &amp; Doa ({wishes.length})
+          </h3>
+          {isSupabaseConfigured && (
+            <span className="inline-flex items-center gap-1 text-[9px] text-emerald-400/90 font-mono">
+              <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse"></span>
+              Live Sync
+            </span>
+          )}
+        </div>
+
+        {wishes.length === 0 ? (
+          <p className="text-center text-xs text-inverse-surface/50 py-4 italic">
+            Belum ada ucapan. Jadilah yang pertama memberikan doa restu!
+          </p>
+        ) : (
+          <div className="space-y-3 max-h-60 overflow-y-auto pr-1">
+            {wishes.map((item) => (
+              <div
+                key={item.id}
+                className="p-3 border border-secondary/25 bg-surface-container/35 backdrop-blur-md rounded-xl shadow-sm"
+              >
+                <div className="flex items-center justify-between mb-1">
+                  <h4 className="font-semibold text-xs text-secondary">
+                    {item.name}
+                  </h4>
+                  <span className={`text-[10px] px-2 py-0.5 rounded-full font-label-caps ${item.attendance === 'yes' ? 'bg-secondary/20 text-secondary' : 'bg-inverse-surface/10 text-inverse-surface/70'
+                    }`}>
+                    {item.attendance === 'yes' ? 'Hadir' : 'Absen'}
+                  </span>
+                </div>
+                <p className="text-[11px] text-inverse-surface/85 leading-relaxed">
+                  {item.message}
+                </p>
+                <span className="text-[9px] text-inverse-surface/50 mt-1 block font-mono">
+                  {formatWishDate(item.created_at || item.date)}
                 </span>
               </div>
-              <p className="text-[11px] text-inverse-surface/85 leading-relaxed">
-                {item.message}
-              </p>
-              <span className="text-[9px] text-inverse-surface/50 mt-1 block font-mono">
-                {item.date}
-              </span>
-            </div>
-          ))}
-        </div>
+            ))}
+          </div>
+        )}
       </div>
     </section>
   );
