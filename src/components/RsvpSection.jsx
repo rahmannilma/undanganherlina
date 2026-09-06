@@ -178,9 +178,17 @@ export default function RsvpSection({ defaultGuestName = '' }) {
       <h2 className="font-headline-md text-xl sm:text-2xl text-secondary mb-2">
         RSVP &amp; Ucapan
       </h2>
-      <p className="font-body-sm text-xs text-inverse-surface opacity-80 mb-6">
+      <p className="font-body-sm text-xs text-inverse-surface opacity-80 mb-2">
         Mohon konfirmasi kehadiran Anda untuk acara pernikahan kami.
       </p>
+
+      {/* Indikator Status Database */}
+      <div className="flex items-center justify-center gap-1.5 mb-6">
+        <span className={`w-2 h-2 rounded-full ${isSupabaseConfigured ? 'bg-emerald-400 animate-pulse' : 'bg-amber-400'}`}></span>
+        <span className="font-mono text-[10px] text-inverse-surface/70">
+          {isSupabaseConfigured ? 'Database Online' : 'Database Belum Terhubung di Vercel'}
+        </span>
+      </div>
 
       {submitted ? (
         <div className="p-6 border border-secondary/50 bg-secondary/15 backdrop-blur-md rounded-2xl mb-6 text-center shadow-inner">
